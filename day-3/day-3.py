@@ -16,7 +16,7 @@ def part_two(banks : list[str]) -> int:
         joltage = 0
         length = len(bank)
         for i in range(12, 0, -1):
-            idx, digit = reduce(lambda accum, curr : curr if curr[1] > accum[1] else accum, enumerate(list(map(int, list(bank[start_pos : length - i + 1])))))
+            idx, digit = reduce(lambda accum, curr : curr if curr[1] > accum[1] else accum, enumerate(map(int, list(bank[start_pos : length - i + 1]))))
             joltage = joltage * 10 + digit
             start_pos += idx + 1
         total_joltage += joltage
