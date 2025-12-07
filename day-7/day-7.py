@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Self
 from math import sqrt
+from functools import cache
 
 class Vector2D:
     def __init__(self: Self, x: int, y: int):
@@ -62,9 +63,20 @@ def part_one(start : Vector2D, splitters : list[Vector2D], height : int) -> int:
 
     return split_count
 
+DOWN = Vector2D(0, 2)
+def part_two(start : Vector2D, splitters : list[Vector2D], height : int):
+    @cache
+    def travel(pos : Vector2D) -> int:
+        new_pos = pos + DOWN
+        if new_pos.y >= height - 1: return 1
+        if new_pos in splitters: return travel(new_pos + LEFT) + travel(new_pos + RIGHT)
+        return travel(new_pos)
+    return travel(start)
+
 def main() -> None:
     start, splitters, height = get_input()
     print(f"Part One: { part_one(start, splitters, height) }")
+    print(f"Part Two: { part_two(start, splitters, height) }")
 
 if __name__ == "__main__":
     main()
