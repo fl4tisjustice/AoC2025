@@ -37,6 +37,7 @@ def get_input() -> set[Vector3D]:
     with open("day-8/input.txt", "r") as fl:
         return set(map(lambda line : Vector3D(*map(int, line.rstrip("\n").split(","))), fl.readlines()))
 
+
 def part_one(junction_boxes : set[Vector3D]) -> int:
     connections : defaultdict[Vector3D, set[Vector3D]] = defaultdict(set)
     
@@ -64,31 +65,45 @@ def part_one(junction_boxes : set[Vector3D]) -> int:
 
     return reduce(mul, sorted(map(len, circuits), reverse = True)[:3])
 
+def connect(shortest_connections : list[tuple[Vector3D, Vector3D, float]], connections : defaultdict[Vector3D, set[Vector3D]]) -> tuple[Vector3D, Vector3D]:
+    box1 = Vector3D(0, 0, 0)
+    box2 = Vector3D(0, 0, 0)
+    for connection in shortest_connections:
+        box1, box2, _ = connection
+        connections[box1].add(box2)
+        connections[box2].add(box1)
+    return box1, box2
+
 def part_two(junction_boxes : set[Vector3D]) -> int:
     connections : defaultdict[Vector3D, set[Vector3D]] = defaultdict(set)
     
     shortest_connections : list[tuple[Vector3D, Vector3D, float]] = sorted(map(lambda pair : pair + (sqrt((pair[1].x - pair[0].x) ** 2 + (pair[1].y - pair[0].y) ** 2 + (pair[1].z - pair[0].z) ** 2),), combinations(junction_boxes, 2)), key = lambda tup : tup[2])
     
-    for connection in shortest_connections:
-        box1, box2, _ = connection
-        connections[box1].add(box2)
-        connections[box2].add(box1)
-
+    left, right = 0, len(shortest_connections) - 1
+    box1 = Vector3D(0, 0, 0)
+    box2 = Vector3D(0, 0, 0)
+    while left < right:
+        middle = left + (right - left) // 2
+        candidate_box1, candidate_box2 = connect(shortest_connections[:middle], connections)
         queue : deque[Vector3D] = deque()
         visited : set[Vector3D] = set()
-        queue.append(box1)
+        queue.append(candidate_box1)
         while len(queue):
             check : Vector3D = queue.pop()
             if check in visited: continue
             queue.extend(connections[check])
             visited.add(check)
-        if len(visited) == 1000: return box1.x * box2.x
-    return 0
+        if len(visited) < len(junction_boxes): left = middle + 1
+        else:
+            right = middle
+            box1, box2 = candidate_box1, candidate_box2
+        connections.clear()
+
+    return box1.x * box2.x
 
 def main() -> None:
     junction_boxes = get_input()
     print(f"Part One: { part_one(junction_boxes) }")
     print(f"Part Two: { part_two(junction_boxes) }")
-
 if __name__ == "__main__":
     main()
