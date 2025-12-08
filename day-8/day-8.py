@@ -64,9 +64,31 @@ def part_one(junction_boxes : set[Vector3D]) -> int:
 
     return reduce(mul, sorted(map(len, circuits), reverse = True)[:3])
 
+def part_two(junction_boxes : set[Vector3D]) -> int:
+    connections : defaultdict[Vector3D, set[Vector3D]] = defaultdict(set)
+    
+    shortest_connections : list[tuple[Vector3D, Vector3D, float]] = sorted(map(lambda pair : pair + (sqrt((pair[1].x - pair[0].x) ** 2 + (pair[1].y - pair[0].y) ** 2 + (pair[1].z - pair[0].z) ** 2),), combinations(junction_boxes, 2)), key = lambda tup : tup[2])
+    
+    for connection in shortest_connections:
+        box1, box2, _ = connection
+        connections[box1].add(box2)
+        connections[box2].add(box1)
+
+        queue : deque[Vector3D] = deque()
+        visited : set[Vector3D] = set()
+        queue.append(box1)
+        while len(queue):
+            check : Vector3D = queue.pop()
+            if check in visited: continue
+            queue.extend(connections[check])
+            visited.add(check)
+        if len(visited) == 1000: return box1.x * box2.x
+    return 0
+
 def main() -> None:
     junction_boxes = get_input()
     print(f"Part One: { part_one(junction_boxes) }")
+    print(f"Part Two: { part_two(junction_boxes) }")
 
 if __name__ == "__main__":
     main()
