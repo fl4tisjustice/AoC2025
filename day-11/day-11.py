@@ -1,4 +1,7 @@
 from collections import deque
+from functools import cache
+from itertools import repeat, starmap
+from enum import Flag, auto
 
 def get_input() -> dict[str, set[str]]:
     with open("day-11/input.txt", "r") as fl:
@@ -13,9 +16,7 @@ def get_input() -> dict[str, set[str]]:
     return ret
 
 def part_one(devices : dict[str, set[str]]) -> int:
-    visited : set[str] = set()
     queue : deque[str] = deque()
-
     queue.append("you")
 
     paths = 0
@@ -24,14 +25,28 @@ def part_one(devices : dict[str, set[str]]) -> int:
         if device == "out":
             paths += 1
             continue
-        visited.add(device)
         queue.extend(devices[device])
-    
     return paths
+
+class Route(Flag):
+    NONE = 0
+    DAC = auto()
+    FFT = auto()
+    BOTH = DAC | FFT
+
+def part_two(devices : dict[str, set[str]]) -> int:
+    @cache
+    def dfs(device : str, route : Route = Route.NONE) -> int:
+        if device == "out": return int(route == Route.BOTH)
+        if device == "fft" or device == "dac":
+            route |= Route.FFT if device == "fft" else Route.DAC
+        return sum(starmap(dfs, zip(devices[device], repeat(route))))
+    return dfs("svr")
 
 def main() -> None:
     devices = get_input()
     print(f"Part One: { part_one(devices) }")
+    print(f"Part Two: { part_two(devices) }")
 
 if __name__ == "__main__":
     main()
