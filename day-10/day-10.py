@@ -13,8 +13,8 @@ def get_input() -> list[tuple[int, tuple[int, ...], tuple[int, ...]]]:
     ret : list[tuple[int, tuple[int, ...], tuple[int, ...]]] = []
     for line in raw:
         lights_raw = cast(re.Match[str], re.search(r"(?<=\[)[.#]+(?=\])", line)).group()
-        buttons_raw = list(map(lambda match : match.group(), re.finditer(r"(?<=\()([0-9]+,)*[0-9]+(?=\))", line)))
-        joltages = tuple(map(int, cast(re.Match[str], re.search(r"(?<=\{)([0-9]+,)*[0-9]+(?=})", line)).group().split(",")))
+        buttons_raw : list[str] = list(map(re.Match.group, re.finditer(r"(?<=\()([0-9]+,)*[0-9]+(?=\))", line)))
+        joltages : tuple[int, ...] = tuple(map(int, cast(re.Match[str], re.search(r"(?<=\{)([0-9]+,)*[0-9]+(?=})", line)).group().split(",")))
 
         lights : int = reduce(lambda accum, curr : (accum << 1) | int(curr == "#"), lights_raw, 0)
         buttons : tuple[int, ...] = tuple(map(lambda button : reduce(lambda accum, curr : accum | (1 << (len(lights_raw) - curr - 1)), map(int, button.split(",")), 0), buttons_raw))
