@@ -29,11 +29,12 @@ def part_one(puzzle : list[tuple[int, tuple[int, ...], tuple[int, ...]]]) -> int
             queue.append((0, 0))
             while len(queue):
                 step, state = queue.popleft()
+                if state in visited: continue
                 if state == lights:
                      total_min_steps += step
                      break
                 visited.add(state)
-                queue.extend(filter(lambda light : light[1] not in visited, map(lambda button : (step + 1, state ^ button), buttons)))
+                queue.extend(map(lambda button : (step + 1, state ^ button), buttons))
     return total_min_steps
 
 def part_two(puzzle : list[tuple[int, tuple[int, ...]]]) -> int:
