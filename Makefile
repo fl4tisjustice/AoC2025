@@ -1,4 +1,4 @@
-C_SRC := $(filter-out day-14/regez.c, $(wildcard **/*.c))
+C_SRC := $(wildcard **/*.c)
 C_EXE := $(patsubst %.c, %, $(C_SRC))
 
 CPP_SRC := $(wildcard **/*.cpp)
