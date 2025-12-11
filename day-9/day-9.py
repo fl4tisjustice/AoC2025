@@ -1,7 +1,8 @@
 from __future__ import annotations
-from typing import Self
+from typing import Self, Iterable, cast
 from math import sqrt
 from itertools import combinations
+from operator import attrgetter
 
 class Vector2D:
     def __init__(self: Self, x: int, y: int):
@@ -32,13 +33,32 @@ class Vector2D:
 def get_input() -> list[Vector2D]:
     with open("day-9/input.txt", "r") as fl:
         return list(map(lambda line : Vector2D(*map(int, line.rstrip("\n").split(","))), fl.readlines()))
-    
+
+def largest_rect_area(rect_corners : Iterable[Vector2D, Vector2D]) -> int:
+    return max(map(lambda tiles : (vec := Vector2D(abs((res := tiles[1] - tiles[0]).x) + 1, abs(res.y) + 1)).x * vec.y, rect_corners))
+
 def part_one(sparse_grid : list[Vector2D]) -> int:
-    return max(map(lambda tiles : (vec := Vector2D(abs((res := tiles[1] - tiles[0]).x) + 1, abs(res.y) + 1)).x * vec.y, combinations(sparse_grid, 2)))
+    return largest_rect_area(combinations(sparse_grid, 2))
+
+def part_two(sparse_grid : list[Vector2D]) -> int:
+    edges : list[tuple[Vector2D, Vector2D]] = list(zip(sparse_grid, sparse_grid[1:] + [sparse_grid[0]]))
+
+    def has_no_instersections(rect : tuple[Vector2D, Vector2D]) -> bool:
+        for from_tile, to_tile in edges:
+            edge_top, edge_bottom = cast(list[int], sorted(map(attrgetter("y"), (from_tile, to_tile))))
+            edge_left, edge_right = cast(list[int], sorted(map(attrgetter("x"), (from_tile, to_tile))))
+            rect_top, rect_bottom = cast(list[int], sorted(map(attrgetter("y"), (rect[0], rect[1]))))
+            rect_left, rect_right = cast(list[int], sorted(map(attrgetter("x"), (rect[0], rect[1]))))
+            if edge_top < rect_bottom and rect_top < edge_bottom and edge_left < rect_right and rect_left < edge_right:
+                return False
+        return True
+
+    return largest_rect_area(filter(has_no_instersections, combinations(sparse_grid, 2)))
 
 def main() -> None:
     sparse_grid = get_input()
     print(f"Part One: { part_one(sparse_grid) }")
+    print(f"Part Two: { part_two(sparse_grid) }")
 
 if __name__ == "__main__":
     main()
